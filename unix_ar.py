@@ -344,11 +344,25 @@ class ArFile(object):
         # multiple files with the same name, just the last one
         for index in self._name_map.values():
             member = self._entries[index]
-            self._extract(member, os.path.join(utf8(path), member.name))
+            self._extract(member, os.path.join(utf8(path), self.extended_filename(member.name)))
+
+    def extended_filename(self, member: str) -> str:
+        if member == '/':
+            name = '/'
+        elif member == '//':
+            name = '//'
+        elif member.startswith('/'):
+            offset = int(member.lstrip('/'))
+            ar_info = self._entries[self._name_map[b'//']]
+            x = self.open(ar_info.name.decode())
+            name = x.read()[offset:].decode().split('\n', 1)[0].rstrip('/')
+        else:
+            name = member.rstrip('/')
+        return name
 
     def open(self, member: str) -> io.BytesIO:
         filelike = self.extract(member, path=io.BytesIO())
-        filelike.name = member.strip('/')
+        filelike.name = self.extended_filename(member)
         return filelike
 
     def close(self):
