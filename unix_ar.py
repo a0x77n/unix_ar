@@ -73,10 +73,22 @@ class ArInfo(object):
         # 58  2   File magic                      0x60 0x0A
         name, mtime, uid, gid, perms, size, magic = (struct.unpack('16s12s6s6s8s10s2s', buffer))
         name = utf8(name).rstrip(b' ')
-        mtime = int(mtime, 10)
-        uid = int(uid, 10)
-        gid = int(gid, 10)
-        perms = int(perms, 8)
+        try:
+            mtime = int(mtime, 10)
+        except ValueError:
+            mtime = None
+        try:
+            uid = int(uid, 10)
+        except ValueError:
+            uid = None
+        try:
+            gid = int(gid, 10)
+        except ValueError:
+            uid = None
+        try:
+            perms = int(perms, 8)
+        except ValueError:
+            perms = None
         size = int(size, 10)
         if magic != b'\x60\n':
             raise ValueError("Invalid file signature")
